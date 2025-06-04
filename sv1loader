@@ -739,7 +739,7 @@ end)
 
 local features = window:AddTab("Info")
 features:Show()
-features:AddLabel("Script is made by Henne").TextSize = 20
+features:AddLabel("Script is made by Henne ♥️").TextSize = 20
 features:AddLabel("Any Problems/Questions? -> imhenne on Discord").TextSize = 20
 features:AddLabel("Paid Version!").TextSize = 20
 features:AddLabel("")
