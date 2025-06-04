@@ -283,7 +283,7 @@ local function getPing()
     return pingStat and pingStat:GetValue() or 0
 end
 
-features:AddTextBox("Reps pro Tick", function(value)
+features:AddTextBox("Rep Speed", function(value)
     local num = tonumber(value)
     if num and num > 0 then
         repsPerTick = math.floor(num)
@@ -295,14 +295,14 @@ end, {
 local function fastRepLoop()
     while runFastRep do
         local startTime = tick()
-        while tick() - startTime < 0.5 and runFastRep do
+        while tick() - startTime < 1 and runFastRep do
             for i = 1, repsPerTick do
                 muscleEvent:FireServer("rep")
             end
             task.wait(0.02)
         end
 
-        while runFastRep and getPing() >= 95 do
+        while runFastRep and getPing() >= 100 do
             task.wait(1)
         end
     end
