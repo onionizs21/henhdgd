@@ -118,10 +118,10 @@ local function fastTrainAndRebirthLoop()
         end
 
         while isRunning and player.leaderstats.Strength.Value < strengthTarget do
-            for _ = 1, 8 do
+            for _ = 1, 14 do
                 muscleEvent:FireServer("rep")
             end
-            task.wait(0.03)
+            task.wait(0.02)
         end
 
         equipPetsByName("Tribal Overlord")
