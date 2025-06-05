@@ -84,24 +84,6 @@ local function equipPetsByName(name)
     end
 end
 
-local function getJungleBarLiftSeat()
-    local machines = workspace:FindFirstChild("machinesFolder")
-    if machines then
-        local lift = machines:FindFirstChild("Jungle Bar Lift")
-        if lift then
-            return lift:FindFirstChild("interactSeat")
-        end
-    end
-    return nil
-end
-
-local function pressE()
-    local vim = game:GetService("VirtualInputManager")
-    vim:SendKeyEvent(true, "E", false, game)
-    task.wait(0.05)
-    vim:SendKeyEvent(false, "E", false, game)
-end
-
 local isRunning = false
 
 local function fastReb()
@@ -112,16 +94,10 @@ local function fastReb()
         local rebirths = player.leaderstats.Rebirths.Value
         local strengthTarget = 5000 + (rebirths * 2600)
 
-        local seat = getJungleBarLiftSeat()
-        if seat then
-            player.Character.HumanoidRootPart.CFrame = seat.CFrame * CFrame.new(0, 3, 0)
-            repeat task.wait(0.1) pressE() until player.Character.Humanoid.Sit
-        end
-
         -- 🏋️ Neuer Trainingsabschnitt: Wiederhole "rep", bis Stärke erreicht
         while isRunning and player.leaderstats.Strength.Value < strengthTarget do
             -- Hier erhöhen wir den "reps"-Wert, der angepasst wird, je nach Premium-Status
-            local repsToDo = player.MembershipType == Enum.MembershipType.Premium and 10 or 20
+            local repsToDo = player.MembershipType == Enum.MembershipType.Premium and 10 or 15
             for _ = 1, repsToDo do
                 muscleEvent:FireServer("rep")
             end
