@@ -104,12 +104,16 @@ end
 
 local isRunning = false
 
-local function fastTrainAndRebirthLoop()
+local function fastReb()
+    local hasPremium = player.MembershipType == Enum.MembershipType.Premium
+
     while isRunning do
         equipPetsByName("Swift Samurai")
+        task.wait(0.4)
 
         local rebirths = player.leaderstats.Rebirths.Value
-        local strengthTarget = 5000 + (rebirths * 2500)
+        local baseTarget = 5000 + (rebirths * 2600)
+        local strengthTarget = baseTarget
 
         local seat = getJungleBarLiftSeat()
         if seat then
@@ -118,34 +122,37 @@ local function fastTrainAndRebirthLoop()
         end
 
         while isRunning and player.leaderstats.Strength.Value < strengthTarget do
-            for _ = 1, 20 do
+            local repsPerCycle = hasPremium and 10 or 14 -- 10 Reps für Premium, 20 für Nicht-Premium
+            for _ = 1, repsPerCycle do
                 muscleEvent:FireServer("rep")
             end
-            task.wait(0.02)
+            task.wait(0.02) -- Minimaler Delay zwischen den Reps
         end
 
-        equipPetsByName("Tribal Overlord")
         task.wait(0.2)
+        equipPetsByName("Tribal Overlord")
+        task.wait(0.4)
 
         local before = player.leaderstats.Rebirths.Value
         repeat
             replicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
-            task.wait(0.1)
+            task.wait(0.3)
         until player.leaderstats.Rebirths.Value > before
 
         task.wait(0.5)
     end
 end
 
+
+
 local switch = features:AddSwitch("Fast Rebirth", function(bool)
     if bool then
         isRunning = true
-        fastTrainAndRebirthLoop()
+        fastReb()
     else
         isRunning = false
     end
 end)
-switch:Set(false)
 
 features:AddLabel("Misc").TextSize = 22
 
@@ -653,8 +660,6 @@ local timeLabel = features:AddLabel("⏱️Time:")
 timeLabel.TextSize = 24
 timeLabel.Font = Enum.Font.PatrickHand
 
-
-
 local stopwatchLabel = features:AddLabel("0d 0h 0m 0s")
 stopwatchLabel.TextSize = 20
 stopwatchLabel.Font = Enum.Font.PatrickHand
@@ -664,8 +669,6 @@ features:AddLabel("").TextSize = 10
 local statsLabel = features:AddLabel("📊Stats:")
 statsLabel.TextSize = 24
 statsLabel.Font = Enum.Font.PatrickHand
-
-
 
 local strengthLabel = features:AddLabel("Strength: 0")
 local durabilityLabel = features:AddLabel("Durability: 0")
@@ -688,8 +691,6 @@ local sessionLabel = features:AddLabel("🕹️Session:")
 sessionLabel.TextSize = 24
 sessionLabel.Font = Enum.Font.PatrickHand
 
-
-
 local sessionStrengthLabel = features:AddLabel("Gained Strength: 0")
 local sessionDurabilityLabel = features:AddLabel("Gained Durability: 0")
 local sessionRebirthsLabel = features:AddLabel("Gained Rebirths: 0")
@@ -703,38 +704,44 @@ sessionRebirthsLabel.Font = Enum.Font.PatrickHand
 
 local startTime = tick()
 
+-- Wir setzen die Session-Stats beim ersten Laden und ändern sie nie mehr.
+local initialStrength = strengthStat.Value
+local initialDurability = durabilityStat.Value
+local initialRebirths = rebirthsStat.Value
+
 task.spawn(function()
-	while true do
-		local elapsedTime = tick() - startTime
-		local days = math.floor(elapsedTime / (24 * 3600))
-		local hours = math.floor((elapsedTime % (24 * 3600)) / 3600)
-		local minutes = math.floor((elapsedTime % 3600) / 60)
-		local seconds = math.floor(elapsedTime % 60)
+    while true do
+        local elapsedTime = tick() - startTime
+        local days = math.floor(elapsedTime / (24 * 3600))
+        local hours = math.floor((elapsedTime % (24 * 3600)) / 3600)
+        local minutes = math.floor((elapsedTime % 3600) / 60)
+        local seconds = math.floor(elapsedTime % 60)
 
-		stopwatchLabel.Text = string.format("%dd %dh %dm %ds", days, hours, minutes, seconds)
+        stopwatchLabel.Text = string.format("%dd %dh %dm %ds", days, hours, minutes, seconds)
 
-		local currentStrength = strengthStat.Value
-		local currentRebirths = rebirthsStat.Value
-		local currentDurability = durabilityStat.Value
+        local currentStrength = strengthStat.Value
+        local currentRebirths = rebirthsStat.Value
+        local currentDurability = durabilityStat.Value
 
-		local formattedStrength = formatNumber(currentStrength)
-		local formattedRebirths = formatNumber(currentRebirths)
-		local formattedDurability = formatNumber(currentDurability)
+        local formattedStrength = formatNumber(currentStrength)
+        local formattedRebirths = formatNumber(currentRebirths)
+        local formattedDurability = formatNumber(currentDurability)
 
-		strengthLabel.Text = "Strength: " .. formattedStrength
-		durabilityLabel.Text = "Durability: " .. formattedDurability
-		rebirthsLabel.Text = "Rebirths: " .. formattedRebirths
+        strengthLabel.Text = "Strength: " .. formattedStrength
+        durabilityLabel.Text = "Durability: " .. formattedDurability
+        rebirthsLabel.Text = "Rebirths: " .. formattedRebirths
 
-		local sessionStrengthDelta = currentStrength - sessionStrength
-		local sessionDurabilityDelta = currentDurability - sessionDurability
-		local sessionRebirthsDelta = currentRebirths - sessionRebirths
+        -- Berechne die Gained-Werte basierend auf den initialen Werten
+        local sessionStrengthDelta = currentStrength - initialStrength
+        local sessionDurabilityDelta = currentDurability - initialDurability
+        local sessionRebirthsDelta = currentRebirths - initialRebirths
 
-		sessionStrengthLabel.Text = "Gained Strength: " .. formatNumber(sessionStrengthDelta)
-		sessionDurabilityLabel.Text = "Gained Durability: " .. formatNumber(sessionDurabilityDelta)
-		sessionRebirthsLabel.Text = "Gained Rebirths: " .. formatNumber(sessionRebirthsDelta)
+        sessionStrengthLabel.Text = "Gained Strength: " .. formatNumber(sessionStrengthDelta)
+        sessionDurabilityLabel.Text = "Gained Durability: " .. formatNumber(sessionDurabilityDelta)
+        sessionRebirthsLabel.Text = "Gained Rebirths: " .. formatNumber(sessionRebirthsDelta)
 
-		task.wait(0.001) 
-	end
+        task.wait(0.001) 
+    end
 end)
 
 local features = window:AddTab("Info")
@@ -745,4 +752,4 @@ features:AddLabel("")
 features:AddLabel("")
 features:AddLabel("")
 features:AddLabel("")
-features:AddLabel("SILENCE // PAID VERSION").TextSize = 60
+features:AddLabel("SILENCE // PAID VERSION").TextSize = 45
