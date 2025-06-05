@@ -97,7 +97,7 @@ local function fastReb()
         -- 🏋️ Neuer Trainingsabschnitt: Wiederhole "rep", bis Stärke erreicht
         while isRunning and player.leaderstats.Strength.Value < strengthTarget do
             -- Hier erhöhen wir den "reps"-Wert, der angepasst wird, je nach Premium-Status
-            local repsToDo = player.MembershipType == Enum.MembershipType.Premium and 10 or 15
+            local repsToDo = player.MembershipType == Enum.MembershipType.Premium and 8 or 14
             for _ = 1, repsToDo do
                 muscleEvent:FireServer("rep")
             end
