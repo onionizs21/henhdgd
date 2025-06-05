@@ -105,15 +105,12 @@ end
 local isRunning = false
 
 local function fastReb()
-    local hasPremium = player.MembershipType == Enum.MembershipType.Premium
-
     while isRunning do
         equipPetsByName("Swift Samurai")
-        task.wait(0.4)
+        task.wait(0.4) -- Kurze Pause zwischen Pet-Wechsel
 
         local rebirths = player.leaderstats.Rebirths.Value
-        local baseTarget = 5000 + (rebirths * 2600)
-        local strengthTarget = baseTarget
+        local strengthTarget = 5000 + (rebirths * 2600)
 
         local seat = getJungleBarLiftSeat()
         if seat then
@@ -121,29 +118,34 @@ local function fastReb()
             repeat task.wait(0.1) pressE() until player.Character.Humanoid.Sit
         end
 
+        -- 🏋️ Neuer Trainingsabschnitt: Wiederhole "rep", bis Stärke erreicht
         while isRunning and player.leaderstats.Strength.Value < strengthTarget do
-            local repsPerCycle = hasPremium and 10 or 14 -- 10 Reps für Premium, 20 für Nicht-Premium
-            for _ = 1, repsPerCycle do
+            -- Hier erhöhen wir den "reps"-Wert, der angepasst wird, je nach Premium-Status
+            local repsToDo = player.MembershipType == Enum.MembershipType.Premium and 10 or 20
+            for _ = 1, repsToDo do
                 muscleEvent:FireServer("rep")
             end
-            task.wait(0.02) -- Minimaler Delay zwischen den Reps
+            task.wait(0.02) -- kurze Pause, um die Serverlast nicht zu überlasten
         end
 
-        task.wait(0.2)
-        equipPetsByName("Tribal Overlord")
-        task.wait(0.4)
+        -- Sicherstellen, dass Stärke erreicht wurde, bevor wir das Pet wechseln
+        if player.leaderstats.Strength.Value >= strengthTarget then
+            -- Sobald die Zielstärke erreicht ist, Pet wechseln
+            equipPetsByName("Tribal Overlord")
+            task.wait(0.4)
 
-        local before = player.leaderstats.Rebirths.Value
-        repeat
-            replicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
-            task.wait(0.3)
-        until player.leaderstats.Rebirths.Value > before
+            -- Berechne den Rebirth-Wert und fordere den Rebirth an
+            local before = player.leaderstats.Rebirths.Value
+            repeat
+                replicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+                task.wait(0.3)
+            until player.leaderstats.Rebirths.Value > before
 
-        task.wait(0.5)
+            -- Kleine Pause, bevor der nächste Durchlauf startet
+            task.wait(0.5)
+        end
     end
 end
-
-
 
 local switch = features:AddSwitch("Fast Rebirth", function(bool)
     if bool then
