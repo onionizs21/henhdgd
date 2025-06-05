@@ -94,9 +94,7 @@ local function fastReb()
         local rebirths = player.leaderstats.Rebirths.Value
         local strengthTarget = 5000 + (rebirths * 2600)
 
-        -- 🏋️ Neuer Trainingsabschnitt: Wiederhole "rep", bis Stärke erreicht
         while isRunning and player.leaderstats.Strength.Value < strengthTarget do
-            -- Hier erhöhen wir den "reps"-Wert, der angepasst wird, je nach Premium-Status
             local repsToDo = player.MembershipType == Enum.MembershipType.Premium and 8 or 14
             for _ = 1, repsToDo do
                 muscleEvent:FireServer("rep")
@@ -104,20 +102,17 @@ local function fastReb()
             task.wait(0.02) -- kurze Pause, um die Serverlast nicht zu überlasten
         end
 
-        -- Sicherstellen, dass Stärke erreicht wurde, bevor wir das Pet wechseln
         if player.leaderstats.Strength.Value >= strengthTarget then
             -- Sobald die Zielstärke erreicht ist, Pet wechseln
             equipPetsByName("Tribal Overlord")
             task.wait(0.4)
 
-            -- Berechne den Rebirth-Wert und fordere den Rebirth an
             local before = player.leaderstats.Rebirths.Value
             repeat
                 replicatedStorage.rEvents.rebirthRemote:InvokeServer("rebirthRequest")
                 task.wait(0.3)
             until player.leaderstats.Rebirths.Value > before
 
-            -- Kleine Pause, bevor der nächste Durchlauf startet
             task.wait(0.5)
         end
     end
